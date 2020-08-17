@@ -30,7 +30,7 @@ type AccessType struct {
 type Role struct {
 	rdfType   struct{}   `quad:"@type > ex:Role"`
 	ID        quad.IRI   `json:"@id"`
-	HasAction []quad.IRI `json:"ex:hasAction"`
+	HasAction []quad.IRI `json:"ex:hasAction"` // field name (predicate) may be written as json field name
 }
 
 //define the Action - read/write
@@ -59,10 +59,11 @@ type Agent struct {
 //this is the subclass of action
 
 type AuthorizedActionOnResource struct {
-	rdfType             struct{}   `quad:"@type > ex:AuthorizedActionOnResource"`
-	ID                  quad.IRI   `json:"@id"` //name of the action, which is a subclass of action
-	HasResource         quad.IRI   `json:"ex:hasResource"`
-	HasActionOnResource []quad.IRI `json:"ex:hasActionOnResource"`
+	rdfType             struct{}      `quad:"@type > ex:AuthorizedActionOnResource"`
+	ID                  quad.IRI      `json:"@id"` //name of the action, which is a subclass of action
+	HasResource         quad.IRI      `json:"ex:hasResource"`
+	HasActionOnResource []quad.IRI    `json:"ex:hasActionOnResource"`
+	SuperClasses        []interface{} `json:"rdfs:subClassOf"`
 }
 
 func checkErr(err error) {
@@ -72,8 +73,6 @@ func checkErr(err error) {
 }
 
 func main() {
-	// Define an "ex:" prefix for IRIs that will be expanded to "http://example.org".
-	// "ex:name" will become "http://example.org/name"
 	voc.RegisterPrefix("ex:", "http://coordy.org/")
 
 	sch := schema.NewConfig()
@@ -206,6 +205,7 @@ func main() {
 		ID:                  quad.IRI("ex:Read"), //subclass of Action
 		HasResource:         quad.IRI("ex:Bijie.pdf"),
 		HasActionOnResource: []quad.IRI{quad.IRI("ex:Read"), quad.IRI("ex:Write")}, //the value in Action
+		SuperClasses:        []interface{}{quad.IRI("ex:Action")},
 	} //subject: ID object:ex:Read predicate: ex:hasActionOnResource
 
 	fmt.Printf("saving: %+v\n", authorizedAction)
@@ -231,14 +231,13 @@ func main() {
 	//define relationships -- search example
 	p1 := cayley.StartPath(store, quad.IRI("ex:Bijie.pdf")).
 		Out(quad.IRI("ex:creator")).Out(quad.IRI("ex:hasRole")).Out(quad.IRI("ex:hasAction"))
-	//can use class as extra node to extract all info
-	//use other ontology to traverse more complex graph
-	//p2 := cayley.StartMorphism(quad.IRI("ex:creator")).Out(quad.IRI("ex:hasRole"))
 
+	//p2 := cayley.StartMorphism(quad.IRI("ex:creator")).Out(quad.IRI("ex:hasRole"))
 	//can directly printout as format of quad
 	err = p1.Iterate(nil).EachValue(nil, func(value quad.Value) {
 		nativeValue := quad.NativeOf(value) // this converts RDF values to normal Go types
 		fmt.Println(nativeValue)
+		//fmt.Println(value)
 	})
 
 	if err != nil {
