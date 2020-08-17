@@ -28,9 +28,9 @@ type AccessType struct {
 
 //define the role - user/admin
 type Role struct {
-	rdfType   struct{} `quad:"@type > ex:Role"`
-	ID        quad.IRI `json:"@id"`
-	HasAction quad.IRI `json:"ex:hasAction"` // field name (predicate) may be written as json field name
+	rdfType   struct{}   `quad:"@type > ex:Role"`
+	ID        quad.IRI   `json:"@id"`
+	HasAction []quad.IRI `json:"ex:hasAction"` // field name (predicate) may be written as json field name
 }
 
 //define the Action - read/write
@@ -50,13 +50,14 @@ type Document struct {
 
 //define Agent
 type Agent struct {
-	rdfType                       struct{} `quad:"@type > ex:Agent"`
-	ID                            quad.IRI `json:"@id"` //name of the document
-	HasRole                       quad.IRI `json:"ex:hasRole"`
-	HasAuthorizedActionOnResource quad.IRI `json:"ex:hasAuthorizedActionOnResource"`
+	rdfType                       struct{}   `quad:"@type > ex:Agent"`
+	ID                            quad.IRI   `json:"@id"` //name of the document
+	HasRole                       quad.IRI   `json:"ex:hasRole"`
+	HasAuthorizedActionOnResource []quad.IRI `json:"ex:hasAuthorizedActionOnResource"`
 }
 
 //this is the subclass of action
+
 type AuthorizedActionOnResource struct {
 	rdfType             struct{} `quad:"@type > ex:AuthorizedActionOnResource"`
 	ID                  quad.IRI `json:"@id"` //name of the action, which is a subclass of action
@@ -101,7 +102,8 @@ func main() {
 
 	// create accessType
 	accessTypePrivate := AccessType{
-		ID: quad.IRI("ex:Private").Full().Short(),
+		ID: quad.IRI("ex:Private"),
+		//quad.IRI("ex:Private")
 	}
 	fmt.Printf("saving: %+v\n", accessTypePrivate)
 	_, err = sch.WriteAsQuads(qw, accessTypePrivate)
@@ -110,7 +112,7 @@ func main() {
 	checkErr(err)
 
 	accessTypePublic := AccessType{
-		ID: quad.IRI("ex:Public").Full().Short(),
+		ID: quad.IRI("ex:Public"),
 	}
 	fmt.Printf("saving: %+v\n", accessTypePublic)
 	_, err = sch.WriteAsQuads(qw, accessTypePublic)
@@ -118,10 +120,9 @@ func main() {
 	err = qw.Close()
 	checkErr(err)
 
-	//create Role
 	userRole := Role{
-		ID:        quad.IRI("ex:User").Full().Short(),
-		HasAction: quad.IRI("ex:Read").Full().Short(),
+		ID:        quad.IRI("ex:User"),
+		HasAction: []quad.IRI{quad.IRI("ex:Read")},
 	}
 	fmt.Printf("saving: %+v\n", userRole)
 	_, err = sch.WriteAsQuads(qw, userRole)
@@ -130,8 +131,9 @@ func main() {
 	checkErr(err)
 
 	adminRole := Role{
-		ID:        quad.IRI("ex:Admin").Full().Short(),
-		HasAction: quad.IRI("ex:Read").Full().Short(),
+		ID:        quad.IRI("ex:Admin"),
+		HasAction: []quad.IRI{quad.IRI("ex.Read"), quad.IRI("ex.Write")},
+		//has action convert to array, atomatically do it twice : quad.Value ---interface to all value
 	}
 	fmt.Printf("saving: %+v\n", adminRole)
 	_, err = sch.WriteAsQuads(qw, adminRole)
@@ -139,19 +141,9 @@ func main() {
 	err = qw.Close()
 	checkErr(err)
 
-	adminRole2 := Role{
-		ID:        quad.IRI("ex:Admin").Full().Short(),
-		HasAction: quad.IRI("ex:Write").Full().Short(),
-	}
-	fmt.Printf("saving: %+v\n", adminRole2)
-	_, err = sch.WriteAsQuads(qw, adminRole2)
-	checkErr(err)
-	err = qw.Close()
-	checkErr(err)
-
 	//create action - read write
 	readAction := Action{
-		ID: quad.IRI("ex:Read").Full().Short(),
+		ID: quad.IRI("ex:Read"),
 	}
 	fmt.Printf("saving: %+v\n", readAction)
 	_, err = sch.WriteAsQuads(qw, readAction)
@@ -160,7 +152,7 @@ func main() {
 	checkErr(err)
 
 	writeAction := Action{
-		ID: quad.IRI("ex:Write").Full().Short(),
+		ID: quad.IRI("ex:Write"),
 	}
 	fmt.Printf("saving: %+v\n", writeAction)
 	_, err = sch.WriteAsQuads(qw, writeAction)
@@ -170,10 +162,10 @@ func main() {
 
 	//create document
 	pdf1 := Document{
-		ID:                 quad.IRI("ex:Bijie.pdf").Full().Short(),
-		HasAuthorizedAgent: quad.IRI("ex:Bijie").Full().Short(),
-		Creator:            quad.IRI("ex:Bijie").Full().Short(),
-		HasAccessType:      quad.IRI("ex:Public").Full().Short(),
+		ID:                 quad.IRI("ex:Bijie.pdf"),
+		HasAuthorizedAgent: quad.IRI("ex:Bijie"),
+		Creator:            quad.IRI("ex:Bijie"),
+		HasAccessType:      quad.IRI("ex:Public"),
 	}
 	fmt.Printf("saving: %+v\n", pdf1)
 	_, err = sch.WriteAsQuads(qw, pdf1)
@@ -182,10 +174,10 @@ func main() {
 	checkErr(err)
 
 	pdf2 := Document{
-		ID:                 quad.IRI("ex:Privatebook.pdf").Full().Short(),
-		HasAuthorizedAgent: quad.IRI("ex:Bijie").Full().Short(),
-		Creator:            quad.IRI("ex:Bijie").Full().Short(),
-		HasAccessType:      quad.IRI("ex:Private").Full().Short(),
+		ID:                 quad.IRI("ex:Privatebook.pdf"),
+		HasAuthorizedAgent: quad.IRI("ex:Bijie"),
+		Creator:            quad.IRI("ex:Bijie"),
+		HasAccessType:      quad.IRI("ex:Private"),
 	}
 	fmt.Printf("saving: %+v\n", pdf2)
 	_, err = sch.WriteAsQuads(qw, pdf2)
@@ -197,9 +189,9 @@ func main() {
 	//agent bijie needs to both read and write
 
 	bijie := Agent{
-		ID:                            quad.IRI("ex:Bijie").Full().Short(),
-		HasRole:                       quad.IRI("ex:Admin").Full().Short(),
-		HasAuthorizedActionOnResource: quad.IRI("ex:Read").Full().Short(),
+		ID:                            quad.IRI("ex:Bijie"),
+		HasRole:                       quad.IRI("ex:Admin"),
+		HasAuthorizedActionOnResource: []quad.IRI{quad.IRI("ex:Read"), quad.IRI("ex:Write")},
 	}
 	fmt.Printf("saving: %+v\n", bijie)
 	_, err = sch.WriteAsQuads(qw, bijie)
@@ -207,31 +199,13 @@ func main() {
 	err = qw.Close()
 	checkErr(err)
 
-	bijie2 := Agent{
-		ID:                            quad.IRI("ex:Bijie").Full().Short(),
-		HasRole:                       quad.IRI("ex:Admin").Full().Short(),
-		HasAuthorizedActionOnResource: quad.IRI("ex:Write").Full().Short(),
-	}
-
-	fmt.Printf("saving: %+v\n", bijie2)
-	_, err = sch.WriteAsQuads(qw, bijie2)
-	checkErr(err)
-	err = qw.Close()
-	checkErr(err)
-
 	//create intermidiate object AuthorizedActionOnResource
 	//this is the subclass of action
-	type AuthorizedActionOnResource struct {
-		rdfType             struct{} `quad:"@type > ex:AuthorizedActionOnResource"`
-		ID                  quad.IRI `json:"@id"` //name of the action, which is a subclass of action
-		HasResource         quad.IRI `json:"ex:hasResource"`
-		HasActionOnResource quad.IRI `json:"ex:hasActionOnResource"`
-	}
 
 	authorizedAction := AuthorizedActionOnResource{
-		ID:                  quad.IRI("ex:Read").Full().Short(), //subclass of Action
-		HasResource:         quad.IRI("ex:Bijie.pdf").Full().Short(),
-		HasActionOnResource: quad.IRI("ex:Read").Full().Short(), //the value in Action
+		ID:                  quad.IRI("ex:Read"), //subclass of Action
+		HasResource:         quad.IRI("ex:Bijie.pdf"),
+		HasActionOnResource: quad.IRI("ex:Read"), //the value in Action
 	} //subject: ID object:ex:Read predicate: ex:hasActionOnResource
 
 	fmt.Printf("saving: %+v\n", authorizedAction)
@@ -241,9 +215,9 @@ func main() {
 	checkErr(err)
 
 	authorizedAction2 := AuthorizedActionOnResource{
-		ID:                  quad.IRI("ex:Read").Full().Short(),
-		HasResource:         quad.IRI("ex:Bijie.pdf").Full().Short(),
-		HasActionOnResource: quad.IRI("ex:Read").Full().Short(),
+		ID:                  quad.IRI("ex:Read"),
+		HasResource:         quad.IRI("ex:Bijie.pdf"),
+		HasActionOnResource: quad.IRI("ex:Read"),
 	}
 
 	fmt.Printf("saving: %+v\n", authorizedAction2)
@@ -261,16 +235,19 @@ func main() {
 	it := store.QuadsAllIterator().Iterate()
 	defer it.Close()
 	for it.Next(ctx) {
-		fmt.Println(store.Quad(it.Result()))
+		q := store.Quad(it.Result())
+		fmt.Println(q.NQuad())
 	}
 
 	fmt.Println("\n###########the path serach result###############")
 	//define relationships -- search example
 	p1 := cayley.StartPath(store, quad.IRI("ex:Bijie.pdf")).
 		Out(quad.IRI("ex:creator")).Out(quad.IRI("ex:hasRole")).Out(quad.IRI("ex:hasAction"))
-
+	//can use class as extra node to extract all info
+	//use other ontology to traverse more complex graph
 	//p2 := cayley.StartMorphism(quad.IRI("ex:creator")).Out(quad.IRI("ex:hasRole"))
 
+	//can directly printout as format of quad
 	err = p1.Iterate(nil).EachValue(nil, func(value quad.Value) {
 		nativeValue := quad.NativeOf(value) // this converts RDF values to normal Go types
 		fmt.Println(nativeValue)
