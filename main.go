@@ -1,3 +1,13 @@
+//improve : print quad, use rdf basic - import rdf, use array, Quad.Value as abstract of differently
+//database memory/Roc memomory
+//B tree function - index - rust (database) -- B tree orgniaze based on some tree - log and insert
+//Rust - how to build B tree
+//C++ impl B tree (primiry key)
+//read more about B tree
+
+//keep in order B tree - organize data -- maybe watch linux OS course tutorial
+//understand AVL
+
 package main
 
 import (
@@ -59,10 +69,10 @@ type Agent struct {
 //this is the subclass of action
 
 type AuthorizedActionOnResource struct {
-	rdfType             struct{} `quad:"@type > ex:AuthorizedActionOnResource"`
-	ID                  quad.IRI `json:"@id"` //name of the action, which is a subclass of action
-	HasResource         quad.IRI `json:"ex:hasResource"`
-	HasActionOnResource quad.IRI `json:"ex:hasActionOnResource"`
+	rdfType             struct{}   `quad:"@type > ex:AuthorizedActionOnResource"`
+	ID                  quad.IRI   `json:"@id"` //name of the action, which is a subclass of action
+	HasResource         quad.IRI   `json:"ex:hasResource"`
+	HasActionOnResource []quad.IRI `json:"ex:hasActionOnResource"`
 }
 
 func checkErr(err error) {
@@ -205,23 +215,11 @@ func main() {
 	authorizedAction := AuthorizedActionOnResource{
 		ID:                  quad.IRI("ex:Read"), //subclass of Action
 		HasResource:         quad.IRI("ex:Bijie.pdf"),
-		HasActionOnResource: quad.IRI("ex:Read"), //the value in Action
+		HasActionOnResource: []quad.IRI{quad.IRI("ex:Read"), quad.IRI("ex:Write")}, //the value in Action
 	} //subject: ID object:ex:Read predicate: ex:hasActionOnResource
 
 	fmt.Printf("saving: %+v\n", authorizedAction)
 	_, err = sch.WriteAsQuads(qw, authorizedAction)
-	checkErr(err)
-	err = qw.Close()
-	checkErr(err)
-
-	authorizedAction2 := AuthorizedActionOnResource{
-		ID:                  quad.IRI("ex:Read"),
-		HasResource:         quad.IRI("ex:Bijie.pdf"),
-		HasActionOnResource: quad.IRI("ex:Read"),
-	}
-
-	fmt.Printf("saving: %+v\n", authorizedAction2)
-	_, err = sch.WriteAsQuads(qw, authorizedAction2)
 	checkErr(err)
 	err = qw.Close()
 	checkErr(err)
