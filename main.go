@@ -1,13 +1,3 @@
-//improve : print quad, use rdf basic - import rdf, use array, Quad.Value as abstract of differently
-//database memory/Roc memomory
-//B tree function - index - rust (database) -- B tree orgniaze based on some tree - log and insert
-//Rust - how to build B tree
-//C++ impl B tree (primiry key)
-//read more about B tree
-
-//keep in order B tree - organize data -- maybe watch linux OS course tutorial
-//understand AVL
-
 package main
 
 import (
@@ -40,7 +30,7 @@ type AccessType struct {
 type Role struct {
 	rdfType   struct{}   `quad:"@type > ex:Role"`
 	ID        quad.IRI   `json:"@id"`
-	HasAction []quad.IRI `json:"ex:hasAction"` // field name (predicate) may be written as json field name
+	HasAction []quad.IRI `json:"ex:hasAction"`
 }
 
 //define the Action - read/write
@@ -249,7 +239,6 @@ func main() {
 	err = p1.Iterate(nil).EachValue(nil, func(value quad.Value) {
 		nativeValue := quad.NativeOf(value) // this converts RDF values to normal Go types
 		fmt.Println(nativeValue)
-		//fmt.Println(value)
 	})
 
 	if err != nil {
