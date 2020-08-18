@@ -232,8 +232,6 @@ func main() {
 	p1 := cayley.StartPath(store, quad.IRI("ex:Bijie.pdf")).
 		Out(quad.IRI("ex:creator")).Out(quad.IRI("ex:hasRole")).Out(quad.IRI("ex:hasAction"))
 
-	//p2 := cayley.StartMorphism(quad.IRI("ex:creator")).Out(quad.IRI("ex:hasRole"))
-	//can directly printout as format of quad
 	err = p1.Iterate(nil).EachValue(nil, func(value quad.Value) {
 		nativeValue := quad.NativeOf(value) // this converts RDF values to normal Go types
 		fmt.Println(nativeValue)
@@ -241,6 +239,17 @@ func main() {
 	})
 
 	if err != nil {
+		log.Fatalln(err)
+	}
+
+	p2 := path.StartPath(store, quad.IRI("ex:Admin")).Follow(path.StartMorphism(quad.IRI("ex:creator"))).Out(quad.IRI("ex:hasRole"))
+	err2 := p2.Iterate(nil).EachValue(nil, func(value quad.Value) {
+		nativeValue := quad.NativeOf(value) // this converts RDF values to normal Go types
+		fmt.Println(nativeValue)
+		//fmt.Println(value)
+	})
+
+	if err2 != nil {
 		log.Fatalln(err)
 	}
 
